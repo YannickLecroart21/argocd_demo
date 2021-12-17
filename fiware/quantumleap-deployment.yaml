@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantumleap
+  labels:
+    app: fiware
+
+spec:
+  selector:
+    matchLabels:
+      app: quantumleap
+
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: quantumleap
+
+    spec:
+      initContainers:
+        - name: wait-on-crate-db
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup crate-db; do echo waiting for crate-db to start ...; sleep 2; done']
+      containers:
+      - name: quantumleap
+        image: smartsdk/quantumleap:0.8
+        env:
+          - name: CRATE_HOST
+            value: "crate-db"
+          - name: LOGLEVEL
+            value: "DEBUG"
+        ports:
+          - containerPort: 8668
+
+
+

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion
+  labels:
+    app: fiware
+spec:
+  selector:
+    matchLabels:
+      app: orion
+  replicas: 1
+  
+  template:
+    metadata:
+      labels:
+        app: orion
+    spec:
+      containers:
+      - args:
+        - -dbhost
+        # matches mongodb release name specified during mongo helm install
+        - fiware-mongodb
+        - -corsOrigin
+        - __ALL
+        - -logLevel
+        - DEBUG
+        - -noCache
+        image: fiware/orion:2.5.2
+        env:
+          - name: ORION_PORT
+            value: "1026"
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:1026/version
+          failureThreshold: 3
+          periodSeconds: 60
+          timeoutSeconds: 10
+        name: orion
+        ports:
+        - containerPort: 1026
+      restartPolicy: Always
+
+
+

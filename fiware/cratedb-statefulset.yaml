@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: crate-db
+  labels:
+    app: fiware
+
+spec:
+  serviceName: "crate-db"
+  selector:
+    matchLabels:
+      app: crate-db
+
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: crate-db
+
+    spec:
+      containers:
+      - name: crate-db
+        image: crate:4.1.4
+        command:
+          - /docker-entrypoint.sh
+          - -Cauth.host_based.enabled=false
+          - -Ccluster.name=democluster
+          - -Chttp.cors.enabled=true
+          - -Chttp.cors.allow-origin="*"
+        env:
+          - name: CRATE_HEAP_SIZE
+            value: "2g"
+        ports:
+          - containerPort: 4200
+          - containerPort: 4300
+        volumeMounts:
+          - name: cratedb-host-volume
+            mountPath: /data
+            
+      volumes:
+        - name: cratedb-host-volume
+          hostPath:
+            path: /run/desktop/mnt/host/c/Users/YannickLecroart/Documents/fiware_ai_k8s/data-cratedb
+            type: DirectoryOrCreate
+
+

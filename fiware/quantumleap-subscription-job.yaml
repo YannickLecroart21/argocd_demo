@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: quantumleap-subscription
+  labels:
+    app: fiware
+
+spec:
+  template:
+    metadata:
+      labels:
+        app: quantumleap-subscription
+
+    spec:
+      initContainers:
+        - name: wait-on-orion
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup orion; do echo waiting for orion to start ...; sleep 2; done']
+      containers:
+      - name: quantumleap-subscription
+        image: localhost:5000/ql-subscription:1.0
+        imagePullPolicy: IfNotPresent
+      restartPolicy: OnFailure
+
+

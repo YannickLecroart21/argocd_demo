@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pmr-data-generator
+  labels:
+    app: fiware
+
+spec:
+  selector:
+    matchLabels:
+      app: pmr-data-generator
+
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: pmr-data-generator
+
+    spec:
+      initContainers:
+        - name: wait-on-orion
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup orion; do echo waiting for orion to start ...; sleep 2; done']
+        - name: wait-on-crate-db
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup crate-db; do echo waiting for crate-db to start ...; sleep 2; done']
+      containers:
+      - name: pmr-data-generator
+        image: localhost:5000/pmr-data-generator:1.0
+        env:
+          - name: IS_DATA_ALREADY_STORED
+            value: "1"
+
+
+

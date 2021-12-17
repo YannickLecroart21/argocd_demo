@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pmr-data-monitoring
+  labels:
+    app: fiware
+
+spec:
+  selector:
+    matchLabels:
+      app: pmr-data-monitoring
+
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        app: pmr-data-monitoring
+
+    spec:
+      initContainers:
+        - name: wait-on-orion
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nslookup orion; do echo waiting for orion to start ...; sleep 2; done']
+      containers:
+      - name: pmr-data-monitoring
+        image: localhost:5000/pmr-data-monitoring:1.0
+        ports:
+          - containerPort: 5001
+
+
+
